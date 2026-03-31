@@ -7,7 +7,7 @@ spring:
   security:
     user:
       name: ${EUREKA_DASHBOARD_USER:eureka}
-      password: ${EUREKA_DASHBOARD_PASSWORD:changeme}
+      password: ${EUREKA_DASHBOARD_PASSWORD:Eureka098()!}
 
 eureka:
   instance:
