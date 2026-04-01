@@ -8,7 +8,7 @@ spring:
     url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:ldms_audit_trail_dev_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME:${MYSQL_USER:developer}}
-    password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:}}
+    password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
