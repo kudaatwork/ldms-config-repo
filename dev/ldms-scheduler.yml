@@ -15,6 +15,14 @@ management:
   server:
     port: 9100
 
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 ldms:
   scheduler:
     overdue-invoices-cron: "0 0 1 * * *"

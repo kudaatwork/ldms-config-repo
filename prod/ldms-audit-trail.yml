@@ -5,10 +5,10 @@ spring:
   application:
     name: ldms-audit-trail
   datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${MYSQL_DATABASE:ldms_audit_trail}?useSSL=true&requireSSL=true&serverTimezone=UTC
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${MYSQL_DATABASE:ldms_audit_trail}?useSSL=true&requireSSL=true&serverTimezone=UTC&createDatabaseIfNotExist=true
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    username: ${DB_USERNAME:${MYSQL_USER:developer}}
+    password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     hikari:
       maximum-pool-size: 50
       minimum-idle: 10
@@ -31,8 +31,8 @@ spring:
   rabbitmq:
     host: ${RABBITMQ_HOST}
     port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
+    username: ${RABBITMQ_USERNAME:developer}
+    password: ${RABBITMQ_PASSWORD:Password098()!}
     listener:
       simple:
         concurrency: 3

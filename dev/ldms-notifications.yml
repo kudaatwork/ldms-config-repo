@@ -5,9 +5,9 @@ spring:
   application:
     name: notifications
   datasource:
-    url: jdbc:mysql://localhost:3306/ldms_notifications?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:root}
+    url: jdbc:mysql://localhost:3306/ldms_notifications?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:${MYSQL_USER:developer}}
+    password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true
@@ -16,6 +16,14 @@ management:
   server:
     port: 9094
 
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 ldms:
   notifications:
     rabbitmq:

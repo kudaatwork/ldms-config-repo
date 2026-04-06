@@ -23,8 +23,8 @@ spring:
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:admin}
-    password: ${RABBITMQ_PASSWORD:admin}
+    username: ${RABBITMQ_USERNAME:developer}
+    password: ${RABBITMQ_PASSWORD:Password098()!}
     virtual-host: /
     connection-timeout: 5000
     listener:
@@ -116,7 +116,7 @@ feign:
 
 # ── JWT (shared secret — all services validate the same token) ─────────
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:dev-jwt-secret-change-me-please-override}
   access-token-expiration-ms: 900000      # 15 minutes
   refresh-token-expiration-ms: 604800000  # 7 days
 
@@ -127,6 +127,12 @@ ldms:
   audit-rabbitmq:
     exchange: ldms.audit.exchange
     routing-key: audit.log
+
+# Backward-compatible aliases used by existing service beans
+audit:
+  rabbitmq:
+    exchange: ${ldms.audit-rabbitmq.exchange}
+    routingkey: ${ldms.audit-rabbitmq.routing-key}
 
 # ── Logging ───────────────────────────────────────────────────────────
 logging:

@@ -148,8 +148,12 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
 
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 logging:
   level:
     org.springframework.cloud.gateway: INFO

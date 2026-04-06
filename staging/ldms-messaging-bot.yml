@@ -5,9 +5,9 @@ spring:
   application:
     name: ldms-messaging-bot
   datasource:
-    url: jdbc:mysql://${DB_HOST:staging-db}:3306/ldms_messaging_bot?useSSL=true&serverTimezone=UTC
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://${DB_HOST:staging-db}:3306/ldms_messaging_bot?useSSL=true&serverTimezone=UTC&createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:${MYSQL_USER:developer}}
+    password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: false

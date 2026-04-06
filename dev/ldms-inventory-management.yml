@@ -5,9 +5,9 @@ spring:
   application:
     name: ldms-inventory-management
   datasource:
-    url: jdbc:mysql://localhost:3306/ldms_inventory_management?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:root}
+    url: jdbc:mysql://localhost:3306/ldms_inventory_management?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:${MYSQL_USER:developer}}
+    password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 30
@@ -21,6 +21,14 @@ management:
   server:
     port: 9086
 
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 clients:
   base-url:
     user-management: http://ldms-user-management
