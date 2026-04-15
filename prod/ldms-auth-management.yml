@@ -27,7 +27,7 @@ ldms:
 
 management:
   server:
-    port: 9082
+    port: 9083
   tracing:
     sampling:
       probability: 0.05

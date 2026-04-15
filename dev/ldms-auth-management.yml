@@ -19,7 +19,7 @@ spring:
 
 management:
   server:
-    port: 9082
+    port: 9083
 
   endpoints:
     web:
