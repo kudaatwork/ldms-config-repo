@@ -1,11 +1,15 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
 
 spring:
   application:
     name: user-management
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   datasource:
-    url: jdbc:mysql://localhost:3306/ldms_user_management?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
+    # MySQL must be listening (e.g. `docker compose up -d mysql` from infrastructure/).
+    # Host/port are overridable for non-Docker local setups.
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/ldms_user_management?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
     username: ${DB_USERNAME:${MYSQL_USER:developer}}
     password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -15,7 +19,13 @@ spring:
       idle-timeout: 30000
       connection-timeout: 20000
   jpa:
+    hibernate:
+      ddl-auto: update
     show-sql: true    # dev only
+  data:
+    redis:
+      repositories:
+        enabled: false
   cache:
     type: redis
     redis:
@@ -23,16 +33,25 @@ spring:
 
 management:
   server:
-    port: 9081
+    port: ${MANAGEMENT_SERVER_PORT:8081}
+  health:
+    rabbit:
+      enabled: false
 
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health,info,prometheus,openapi,swagger-ui
   metrics:
     export:
       prometheus:
         enabled: true
+
+springdoc:
+  use-management-port: true
+  show-actuator: true
+  api-docs:
+    path: /v3/api-docs
 ldms:
   audit:
     enabled: true
@@ -52,3 +71,25 @@ clients:
   base-url:
     locationService: http://ldms-location-management:${LOCATION_MANAGEMENT_SERVER_PORT:8084}
     fileUploadService: http://ldms-documents-management:${DOCUMENTS_MANAGEMENT_SERVER_PORT:8080}
+
+# Matches ldms-eureka-server spring.security.user defaults (Basic auth on /eureka/).
+# Do not use ${VAR:http://...} here — Spring truncates the default at the first ':'.
+eureka:
+  client:
+    service-url:
+      defaultZone: "http://eureka:Eureka098()!@localhost:8761/eureka/"
+    register-with-eureka: true
+    fetch-registry: true
+    eureka-server-connect-timeout-seconds: 5
+    eureka-server-read-timeout-seconds: 8
+
+constants:
+  max-image-size: ${CONSTANTS_MAX_IMAGE_SIZE:2048KB}
+
+logging:
+  level:
+    org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration: ERROR
+    org.springframework.cloud.loadbalancer: WARN
+    com.netflix.discovery: WARN
+    com.netflix.discovery.shared.resolver.aws.ConfigClusterResolver: WARN
+    com.netflix.discovery.shared.transport.decorator.RetryableEurekaHttpClient: WARN

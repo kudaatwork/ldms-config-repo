@@ -1,0 +1,40 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: file-upload-service
+  datasource:
+    url: jdbc:mysql://${DB_HOST:staging-db}:3306/ldms_file_upload?useSSL=true&serverTimezone=UTC&createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:${MYSQL_USER:developer}}
+    password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: false
+
+eureka:
+  username: ${EUREKA_USERNAME:eureka}
+  password: ${EUREKA_PASSWORD:Eureka098()!}
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://staging-eureka:8761/eureka/}
+
+rustfs:
+  enabled: true
+  base-url: ${RUSTFS_BASE_URL}
+  internal-token: ${RUSTFS_INTERNAL_TOKEN}
+
+file:
+  upload:
+    location: ${FILE_UPLOAD_LOCAL_PATH:./uploads}
+
+management:
+  server:
+    port: 9085
+  tracing:
+    sampling:
+      probability: 0.1
+
+logging:
+  level:
+    projectlx: INFO
