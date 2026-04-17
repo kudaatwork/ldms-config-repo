@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8080
 
 spring:
   application:
@@ -149,6 +149,8 @@ gateway:
     roles-claim: roles
 
 management:
+  server:
+    port: 9080
   endpoints:
     web:
       exposure:

@@ -42,6 +42,8 @@ spring:
         default-requeue-rejected: false
 
 management:
+  server:
+    port: 9099
   endpoints:
     web:
       exposure:

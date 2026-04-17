@@ -1,3 +1,4 @@
+# Main registry port stays 8761 (Spring Cloud default). Actuator is on management.server.port (90xx).
 server:
   port: 8761
 
@@ -45,6 +46,8 @@ logging:
     com.netflix.discovery: INFO
 
 management:
+  server:
+    port: 9076
   endpoints:
     web:
       exposure:

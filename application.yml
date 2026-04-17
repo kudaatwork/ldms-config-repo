@@ -77,6 +77,8 @@ eureka:
     lease-expiration-duration-in-seconds: 90
 
 # ── Actuator & Monitoring ─────────────────────────────────────────────
+# Each microservice sets server.port (80xx) and management.server.port (90xx) in
+# dev/ staging/ prod/{application-name}.yml — not in this shared file.
 management:
   endpoints:
     web:
