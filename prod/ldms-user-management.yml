@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:8081}
+  port: ${SERVER_PORT:8086}
 
 spring:
   application:
@@ -44,7 +44,7 @@ clients:
 
 management:
   server:
-    port: ${MANAGEMENT_SERVER_PORT:9081}
+    port: ${MANAGEMENT_SERVER_PORT:9086}
   tracing:
     sampling:
       probability: 0.05
