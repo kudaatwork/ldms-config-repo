@@ -1,21 +1,48 @@
+# Secrets must come from the environment (or a private secrets store) — do not commit plaintext keys.
+# GitHub push protection blocks AWS keys, Twilio SIDs, etc. in this file.
+#
+# Required for full functionality (set in .env, IDE run config, or deployment secrets):
+#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY — Spring Cloud AWS (SES)
+#   TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
+#   SENDGRID_API_KEY (if using SendGrid)
+#   JWT_SECRET — HS256 signing secret for shared-library JWT
+
 server:
   port: 8094
 
 spring:
   application:
     name: notifications
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:developer}
+    password: ${RABBITMQ_PASSWORD:Password098()!}
+
   datasource:
     url: jdbc:mysql://localhost:3306/ldms_notifications?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
     username: ${DB_USERNAME:${MYSQL_USER:developer}}
     password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     show-sql: true
+
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID:}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      region:
+        static: ${AWS_REGION:eu-north-1}
+      ses:
+        enabled: ${SPRING_CLOUD_AWS_SES_ENABLED:true}
+        region: ${AWS_REGION:eu-north-1}
 
 management:
   server:
     port: 9094
-
   endpoints:
     web:
       exposure:
@@ -24,9 +51,71 @@ management:
     export:
       prometheus:
         enabled: true
-ldms:
-  notifications:
-    rabbitmq:
-      exchange: ldms.notifications.exchange
-      queue: ldms.notifications.queue
-      routing-key: notification.send
+
+notifications:
+  rabbitmq:
+    exchange: notifications.direct
+    queue: notifications.queue
+    routing-key: notifications.send
+  providers:
+    slack:
+      webhook-url: ${SLACK_WEBHOOK_URL:}
+    teams:
+      webhook-url: ${TEAMS_WEBHOOK_URL:}
+
+audit:
+  rabbitmq:
+    exchange: exchange.audit.log
+    routing-key: routing.audit.log
+
+jwt:
+  secret: ${JWT_SECRET:}
+  access-token-expiration-ms: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:900000}
+  refresh-token-expiration-ms: ${JWT_REFRESH_TOKEN_EXPIRATION_MS:604800000}
+
+springdoc:
+  swagger-ui:
+    path: "/swagger-ui.html"
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: full
+
+flyway:
+  enabled: true
+  locations: classpath:db/migration
+
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  phone-number: ${TWILIO_PHONE_NUMBER:+13186186886}
+  whatsapp:
+    from-number: ${TWILIO_WHATSAPP_FROM_NUMBER:+14155238886}
+    sandbox-mode: ${TWILIO_WHATSAPP_SANDBOX_MODE:true}
+
+sendgrid:
+  api-key: ${SENDGRID_API_KEY:}
+  from-email: ${SENDGRID_FROM_EMAIL:noreply@yourcompany.com}
+
+# aws.ses.from-email is read by the app; root credentials are optional if you use spring.cloud.aws only
+aws:
+  ses:
+    region: ${AWS_REGION:eu-north-1}
+    from-email: ${AWS_SES_FROM_EMAIL:info@xigencreative.co.zw}
+  credentials:
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}
+
+firebase:
+  service-account-file: ${FIREBASE_SERVICE_ACCOUNT_FILE:classpath:ldms-inapp-notifications-firebase-adminsdk-fbsvc-c44f468b67.json}
+
+app:
+  security:
+    token:
+      secret-key: ${TOKEN_SECRET_KEY:your-super-secret-signing-key-change-in-production-min-32-chars}
+      length: ${TOKEN_LENGTH:32}
+      expiration-hours: ${TOKEN_EXPIRATION_HOURS:24}

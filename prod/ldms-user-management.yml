@@ -44,7 +44,7 @@ clients:
 
 management:
   server:
-    port: ${MANAGEMENT_SERVER_PORT:8081}
+    port: ${MANAGEMENT_SERVER_PORT:9081}
   tracing:
     sampling:
       probability: 0.05
