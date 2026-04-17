@@ -24,6 +24,9 @@ ldms:
   auth:
     otp-expiry-minutes: 5
     max-otp-attempts: 3
+    google:
+      enabled: ${GOOGLE_OAUTH_ENABLED:false}
+      client-id: ${GOOGLE_CLIENT_ID:}
 
 management:
   server:

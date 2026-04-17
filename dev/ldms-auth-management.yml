@@ -37,3 +37,7 @@ ldms:
   auth:
     otp-expiry-minutes: 5
     max-otp-attempts: 3
+    # POST /api/v1/auth/google-id-token — Google Cloud OAuth 2.0 Web client ID; enable when frontend uses Google Sign-In.
+    google:
+      enabled: ${GOOGLE_OAUTH_ENABLED:false}
+      client-id: ${GOOGLE_CLIENT_ID:}
