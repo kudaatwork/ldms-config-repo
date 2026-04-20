@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: 8087
 
 spring:
   application:
@@ -29,7 +29,7 @@ clients:
 
 management:
   server:
-    port: 9083
+    port: 9087
   tracing:
     sampling:
       probability: 0.1
