@@ -11,6 +11,11 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true
+  # Dev multipart limits (override the 128MB root default for this service).
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
 
 eureka:
   username: ${EUREKA_USERNAME:eureka}
@@ -39,3 +44,8 @@ management:
     export:
       prometheus:
         enabled: true
+
+logging:
+  level:
+    projectlx.co.zw.fileuploadservice: DEBUG
+    projectlx.co.zw.shared_library.utils.rustfs: DEBUG

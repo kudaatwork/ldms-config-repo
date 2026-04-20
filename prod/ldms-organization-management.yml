@@ -22,6 +22,9 @@ app:
   kyc:
     stage1-sla-hours: 48
     stage2-sla-hours: 24
+  organization:
+    kyc:
+      auto-advance-to-stage1: false
 
 clients:
   base-url:

@@ -27,12 +27,17 @@ management:
     export:
       prometheus:
         enabled: true
+
 app:
   verification:
     base-url: http://localhost:4200/verify
   kyc:
     stage1-sla-hours: 48
     stage2-sla-hours: 24
+  organization:
+    kyc:
+      # When false, reviewers must explicitly move SUBMITTED into Stage 1.
+      auto-advance-to-stage1: false
 
 clients:
   base-url:

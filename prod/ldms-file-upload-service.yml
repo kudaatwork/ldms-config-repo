@@ -16,6 +16,10 @@ spring:
       connection-timeout: 30000
   jpa:
     show-sql: false
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 55MB
 
 eureka:
   username: ${EUREKA_USERNAME:eureka}
