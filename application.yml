@@ -64,10 +64,13 @@ spring:
       max-request-size: 128MB
 
 # ── Eureka ───────────────────────────────────────────────────────────
+# Credentials MUST be embedded in the defaultZone URL. Spring Cloud Eureka
+# ignores top-level eureka.username / eureka.password properties.
+# The password "Eureka098()!" is URL-encoded here: %28 = "(", %29 = ")", %21 = "!".
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_URL:http://${EUREKA_USERNAME:eureka}:${EUREKA_PASSWORD_ENCODED:Eureka098%28%29%21}@localhost:8761/eureka/}
     register-with-eureka: true
     fetch-registry: true
     registry-fetch-interval-seconds: 30
