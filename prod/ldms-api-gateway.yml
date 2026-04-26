@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8091
 
 spring:
   application:
@@ -46,83 +46,83 @@ spring:
         - id: frontend-user
           uri: lb://user-management
           predicates:
-            - Path=/api/v1/frontend/user/**
+            - Path=/ldms-user-management/v1/frontend/user/**
         - id: frontend-auth
           uri: lb://auth-management
           predicates:
-            - Path=/api/v1/frontend/auth/**
+            - Path=/ldms-authentication/v1/auth/**
         - id: frontend-organization
           uri: lb://organization-management
           predicates:
-            - Path=/api/v1/frontend/organization/**
+            - Path=/ldms-organization-management/v1/frontend/organization/**
         - id: frontend-inventory
           uri: lb://inventory-management
           predicates:
-            - Path=/api/v1/frontend/inventory/**
+            - Path=/ldms-inventory-management/v1/frontend/inventory/**
         - id: frontend-shipment
           uri: lb://shipment-management
           predicates:
-            - Path=/api/v1/frontend/shipment/**
+            - Path=/ldms-shipment-management/v1/frontend/shipment/**
         - id: frontend-document
           uri: lb://documents-management
           predicates:
-            - Path=/api/v1/frontend/document/**
+            - Path=/ldms-documents-management/v1/frontend/document/**
         - id: frontend-fleet
           uri: lb://fleet-management
           predicates:
-            - Path=/api/v1/frontend/fleet/**
+            - Path=/ldms-fleet-management/v1/frontend/fleet/**
         - id: frontend-trip
           uri: lb://trip-tracking
           predicates:
-            - Path=/api/v1/frontend/trip/**
+            - Path=/ldms-trip-tracking/v1/frontend/trip/**
         - id: frontend-billing
           uri: lb://billing-payments
           predicates:
-            - Path=/api/v1/frontend/billing/**
+            - Path=/ldms-billing-payments/v1/frontend/billing/**
         - id: frontend-notification
           uri: lb://notifications
           predicates:
-            - Path=/api/v1/frontend/notification/**
+            - Path=/ldms-notifications/v1/frontend/notification/**
         - id: system-user
           uri: lb://user-management
           predicates:
-            - Path=/api/v1/system/user/**
+            - Path=/ldms-user-management/v1/system/user/**
         - id: system-auth
           uri: lb://auth-management
           predicates:
-            - Path=/api/v1/system/auth/**
+            - Path=/ldms-authentication/v1/auth/**
         - id: system-organization
           uri: lb://organization-management
           predicates:
-            - Path=/api/v1/system/organization/**
+            - Path=/ldms-organization-management/v1/system/organization/**
         - id: system-inventory
           uri: lb://inventory-management
           predicates:
-            - Path=/api/v1/system/inventory/**
+            - Path=/ldms-inventory-management/v1/system/inventory/**
         - id: system-shipment
           uri: lb://shipment-management
           predicates:
-            - Path=/api/v1/system/shipment/**
+            - Path=/ldms-shipment-management/v1/system/shipment/**
         - id: system-document
           uri: lb://documents-management
           predicates:
-            - Path=/api/v1/system/document/**
+            - Path=/ldms-documents-management/v1/system/document/**
         - id: system-fleet
           uri: lb://fleet-management
           predicates:
-            - Path=/api/v1/system/fleet/**
+            - Path=/ldms-fleet-management/v1/system/fleet/**
         - id: system-trip
           uri: lb://trip-tracking
           predicates:
-            - Path=/api/v1/system/trip/**
+            - Path=/ldms-trip-tracking/v1/system/trip/**
         - id: system-billing
           uri: lb://billing-payments
           predicates:
-            - Path=/api/v1/system/billing/**
+            - Path=/ldms-billing-payments/v1/system/billing/**
         - id: system-notification
           uri: lb://notifications
           predicates:
-            - Path=/api/v1/system/notification/**
+            - Path=/ldms-notifications/v1/system/notification/**
 
 eureka:
   client:

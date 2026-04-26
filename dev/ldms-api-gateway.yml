@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8091
 
 spring:
   application:
@@ -88,6 +88,10 @@ spring:
           uri: lb://notifications
           predicates:
             - Path=/api/v1/frontend/notification/**
+        - id: frontend-locations
+          uri: lb://ldms-location-management
+          predicates:
+            - Path=/ldms-locations/v1/frontend/**
         - id: system-user
           uri: lb://user-management
           predicates:
@@ -128,6 +132,10 @@ spring:
           uri: lb://notifications
           predicates:
             - Path=/api/v1/system/notification/**
+        - id: system-locations
+          uri: lb://ldms-location-management
+          predicates:
+            - Path=/ldms-locations/v1/system/**
 
 eureka:
   client:
