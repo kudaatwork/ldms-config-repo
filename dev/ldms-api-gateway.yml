@@ -19,14 +19,16 @@ spring:
 
   cloud:
     gateway:
+      # CORS is owned ONLY here. Downstream services MUST NOT add @CrossOrigin or
+      # WebMvcConfigurer-based CORS, otherwise duplicate Access-Control-Allow-Origin
+      # headers are returned and the browser rejects every response.
       globalcors:
         add-to-simple-url-handler-mapping: true
         cors-configurations:
           '[/**]':
             allowedOriginPatterns:
-              - "http://localhost:4200"
-              - "http://localhost:4201"
-              - "http://localhost:4202"
+              - "http://localhost:[*]"
+              - "http://127.0.0.1:[*]"
             allowedMethods:
               - GET
               - HEAD
