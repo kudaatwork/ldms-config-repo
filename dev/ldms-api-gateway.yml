@@ -49,91 +49,66 @@ spring:
             redis-rate-limiter.replenishRate: 2
             redis-rate-limiter.burstCapacity: 100
             key-resolver: "#{@ipKeyResolver}"
+      # Route convention: Path=/<spring.application.name on downstream>/v1/<scope>/**
+      # Scopes: frontend (JWT, role-protected), backoffice (JWT, role-protected),
+      #         system (unauthenticated, internal/automation), auth (login/refresh).
       routes:
         - id: frontend-user
           uri: lb://user-management
           predicates:
-            - Path=/api/v1/frontend/user/**
-        - id: frontend-auth
+            - Path=/ldms-user-management/v1/frontend/**
+        - id: system-user
+          uri: lb://user-management
+          predicates:
+            - Path=/ldms-user-management/v1/system/**
+        - id: auth
           uri: lb://auth-management
           predicates:
-            - Path=/api/v1/frontend/auth/**
+            - Path=/ldms-authentication/v1/auth/**
         - id: frontend-organization
-          uri: lb://organization-management
+          uri: lb://organization-management-service
           predicates:
-            - Path=/api/v1/frontend/organization/**
-        - id: frontend-inventory
-          uri: lb://inventory-management
+            - Path=/ldms-organization-management/v1/frontend/**
+        - id: system-organization
+          uri: lb://organization-management-service
           predicates:
-            - Path=/api/v1/frontend/inventory/**
-        - id: frontend-shipment
-          uri: lb://shipment-management
-          predicates:
-            - Path=/api/v1/frontend/shipment/**
-        - id: frontend-document
-          uri: lb://documents-management
-          predicates:
-            - Path=/api/v1/frontend/document/**
-        - id: frontend-fleet
-          uri: lb://fleet-management
-          predicates:
-            - Path=/api/v1/frontend/fleet/**
-        - id: frontend-trip
-          uri: lb://trip-tracking
-          predicates:
-            - Path=/api/v1/frontend/trip/**
-        - id: frontend-billing
-          uri: lb://billing-payments
-          predicates:
-            - Path=/api/v1/frontend/billing/**
-        - id: frontend-notification
+            - Path=/ldms-organization-management/v1/system/**
+        - id: frontend-notifications
           uri: lb://notifications
           predicates:
-            - Path=/api/v1/frontend/notification/**
+            - Path=/ldms-notifications/v1/frontend/**
+        - id: system-notifications
+          uri: lb://notifications
+          predicates:
+            - Path=/ldms-notifications/v1/system/**
+        - id: frontend-audit-trail
+          uri: lb://ldms-audit-trail
+          predicates:
+            - Path=/ldms-audit-trail/v1/frontend/**
+        - id: backend-audit-trail
+          uri: lb://ldms-audit-trail
+          predicates:
+            - Path=/ldms-audit-trail/v1/backend/**
+        - id: system-audit-trail
+          uri: lb://ldms-audit-trail
+          predicates:
+            - Path=/ldms-audit-trail/v1/system/**
+        - id: frontend-file-upload
+          uri: lb://ldms-file-upload-service
+          predicates:
+            - Path=/ldms-file-upload-service/v1/frontend/**
+        - id: backoffice-file-upload
+          uri: lb://ldms-file-upload-service
+          predicates:
+            - Path=/ldms-file-upload-service/v1/backoffice/**
+        - id: system-file-upload
+          uri: lb://ldms-file-upload-service
+          predicates:
+            - Path=/ldms-file-upload-service/v1/system/**
         - id: frontend-locations
           uri: lb://ldms-location-management
           predicates:
             - Path=/ldms-locations/v1/frontend/**
-        - id: system-user
-          uri: lb://user-management
-          predicates:
-            - Path=/api/v1/system/user/**
-        - id: system-auth
-          uri: lb://auth-management
-          predicates:
-            - Path=/api/v1/system/auth/**
-        - id: system-organization
-          uri: lb://organization-management
-          predicates:
-            - Path=/api/v1/system/organization/**
-        - id: system-inventory
-          uri: lb://inventory-management
-          predicates:
-            - Path=/api/v1/system/inventory/**
-        - id: system-shipment
-          uri: lb://shipment-management
-          predicates:
-            - Path=/api/v1/system/shipment/**
-        - id: system-document
-          uri: lb://documents-management
-          predicates:
-            - Path=/api/v1/system/document/**
-        - id: system-fleet
-          uri: lb://fleet-management
-          predicates:
-            - Path=/api/v1/system/fleet/**
-        - id: system-trip
-          uri: lb://trip-tracking
-          predicates:
-            - Path=/api/v1/system/trip/**
-        - id: system-billing
-          uri: lb://billing-payments
-          predicates:
-            - Path=/api/v1/system/billing/**
-        - id: system-notification
-          uri: lb://notifications
-          predicates:
-            - Path=/api/v1/system/notification/**
         - id: system-locations
           uri: lb://ldms-location-management
           predicates:
@@ -142,7 +117,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://eureka:Eureka098()!@localhost:8761/eureka/
+      defaultZone: http://eureka:Eureka098%28%29%21@localhost:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
     eureka-server-connect-timeout-seconds: 5
