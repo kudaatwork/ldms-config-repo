@@ -23,3 +23,11 @@ management:
     export:
       prometheus:
         enabled: true
+
+eureka:
+  instance:
+    # Force localhost registration in local dev so gateway can resolve and reach
+    # this service even when VPN/virtual NICs expose non-routable 10.x addresses.
+    prefer-ip-address: false
+    hostname: localhost
+    instance-id: ${eureka.instance.hostname}:${spring.application.name}:${server.port}
