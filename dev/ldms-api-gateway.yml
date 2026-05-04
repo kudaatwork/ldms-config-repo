@@ -1,152 +1,216 @@
-server:
-  port: 8091
-
 spring:
-  application:
-    name: ldms-api-gateway
-
   jpa:
     hibernate:
       ddl-auto: none
-  flyway:
-    enabled: false
-
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate.jdbc.batch_size: 25
+      hibernate.order_inserts: true
+      hibernate.format_sql: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:developer}
+    password: ${RABBITMQ_PASSWORD:Password098()!}
+    virtual-host: /
+    connection-timeout: 5000
+    listener:
+      simple:
+        acknowledge-mode: auto
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000
+          multiplier: 2.0
+          max-interval: 10000
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 2
       password: ${REDIS_PASSWORD:}
-
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+    out-of-order: false
+  servlet:
+    multipart:
+      max-file-size: 128MB
+      max-request-size: 128MB
+  application:
+    name: ldms-api-gateway
   cloud:
     gateway:
-      # CORS is owned ONLY here. Downstream services MUST NOT add @CrossOrigin or
-      # WebMvcConfigurer-based CORS, otherwise duplicate Access-Control-Allow-Origin
-      # headers are returned and the browser rejects every response.
       globalcors:
         add-to-simple-url-handler-mapping: true
         cors-configurations:
           '[/**]':
             allowedOriginPatterns:
-              - "http://localhost:[*]"
-              - "http://127.0.0.1:[*]"
+            - http://localhost:[*]
+            - http://127.0.0.1:[*]
             allowedMethods:
-              - GET
-              - HEAD
-              - POST
-              - PUT
-              - PATCH
-              - DELETE
-              - OPTIONS
-            allowedHeaders: "*"
+            - GET
+            - HEAD
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+            allowedHeaders: '*'
             exposedHeaders:
-              - "X-User-Id"
-              - "X-User-Roles"
+            - X-User-Id
+            - X-User-Roles
             allowCredentials: true
             maxAge: 3600
       default-filters:
-        - name: RequestRateLimiter
-          args:
-            redis-rate-limiter.replenishRate: 2
-            redis-rate-limiter.burstCapacity: 100
-            key-resolver: "#{@ipKeyResolver}"
-      # Route convention: Path=/<spring.application.name on downstream>/v1/<scope>/**
-      # Scopes: frontend (JWT, role-protected), backoffice (JWT, role-protected),
-      #         system (unauthenticated, internal/automation), auth (login/refresh).
+      - name: RequestRateLimiter
+        args:
+          redis-rate-limiter.replenishRate: 2
+          redis-rate-limiter.burstCapacity: 100
+          key-resolver: '#{@ipKeyResolver}'
       routes:
-        - id: frontend-user
-          uri: lb://user-management
-          predicates:
-            - Path=/ldms-user-management/v1/frontend/**
-        - id: system-user
-          uri: lb://user-management
-          predicates:
-            - Path=/ldms-user-management/v1/system/**
-        - id: auth
-          uri: lb://auth-management
-          predicates:
-            - Path=/ldms-authentication/v1/auth/**
-        - id: frontend-organization
-          uri: lb://organization-management-service
-          predicates:
-            - Path=/ldms-organization-management/v1/frontend/**
-        - id: system-organization
-          uri: lb://organization-management-service
-          predicates:
-            - Path=/ldms-organization-management/v1/system/**
-        - id: frontend-notifications
-          uri: lb://notifications
-          predicates:
-            - Path=/ldms-notifications/v1/frontend/**
-        - id: system-notifications
-          uri: lb://notifications
-          predicates:
-            - Path=/ldms-notifications/v1/system/**
-        - id: frontend-audit-trail
-          uri: lb://ldms-audit-trail
-          predicates:
-            - Path=/ldms-audit-trail/v1/frontend/**
-        - id: backend-audit-trail
-          uri: lb://ldms-audit-trail
-          predicates:
-            - Path=/ldms-audit-trail/v1/backend/**
-        - id: system-audit-trail
-          uri: lb://ldms-audit-trail
-          predicates:
-            - Path=/ldms-audit-trail/v1/system/**
-        - id: frontend-file-upload
-          uri: lb://ldms-file-upload-service
-          predicates:
-            - Path=/ldms-file-upload-service/v1/frontend/**
-        - id: backoffice-file-upload
-          uri: lb://ldms-file-upload-service
-          predicates:
-            - Path=/ldms-file-upload-service/v1/backoffice/**
-        - id: system-file-upload
-          uri: lb://ldms-file-upload-service
-          predicates:
-            - Path=/ldms-file-upload-service/v1/system/**
-        - id: frontend-locations
-          uri: lb://ldms-location-management
-          predicates:
-            - Path=/ldms-locations/v1/frontend/**
-        - id: system-locations
-          uri: lb://ldms-location-management
-          predicates:
-            - Path=/ldms-locations/v1/system/**
-
+      - id: frontend-user
+        uri: lb://user-management
+        predicates:
+        - Path=/ldms-user-management/v1/frontend/**
+      - id: system-user
+        uri: lb://user-management
+        predicates:
+        - Path=/ldms-user-management/v1/system/**
+      - id: auth
+        uri: lb://auth-management
+        predicates:
+        - Path=/ldms-authentication/v1/auth/**
+      - id: frontend-organization
+        uri: lb://organization-management-service
+        predicates:
+        - Path=/ldms-organization-management/v1/frontend/**
+      - id: system-organization
+        uri: lb://organization-management-service
+        predicates:
+        - Path=/ldms-organization-management/v1/system/**
+      - id: frontend-notifications
+        uri: lb://notifications
+        predicates:
+        - Path=/ldms-notifications/v1/frontend/**
+      - id: system-notifications
+        uri: lb://notifications
+        predicates:
+        - Path=/ldms-notifications/v1/system/**
+      - id: frontend-audit-trail
+        uri: lb://ldms-audit-trail
+        predicates:
+        - Path=/ldms-audit-trail/v1/frontend/**
+      - id: backend-audit-trail
+        uri: lb://ldms-audit-trail
+        predicates:
+        - Path=/ldms-audit-trail/v1/backend/**
+      - id: system-audit-trail
+        uri: lb://ldms-audit-trail
+        predicates:
+        - Path=/ldms-audit-trail/v1/system/**
+      - id: frontend-file-upload
+        uri: lb://ldms-file-upload-service
+        predicates:
+        - Path=/ldms-file-upload-service/v1/frontend/**
+      - id: backoffice-file-upload
+        uri: lb://ldms-file-upload-service
+        predicates:
+        - Path=/ldms-file-upload-service/v1/backoffice/**
+      - id: system-file-upload
+        uri: lb://ldms-file-upload-service
+        predicates:
+        - Path=/ldms-file-upload-service/v1/system/**
+      - id: frontend-locations
+        uri: lb://ldms-location-management
+        predicates:
+        - Path=/ldms-locations/v1/frontend/**
+      - id: system-locations
+        uri: lb://ldms-location-management
+        predicates:
+        - Path=/ldms-locations/v1/system/**
 eureka:
   client:
     service-url:
       defaultZone: http://eureka:Eureka098%28%29%21@localhost:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
+    registry-fetch-interval-seconds: 30
     eureka-server-connect-timeout-seconds: 5
     eureka-server-read-timeout-seconds: 8
-    registry-fetch-interval-seconds: 30
     instance-info-replication-interval-seconds: 30
   instance:
     prefer-ip-address: true
     lease-renewal-interval-in-seconds: 30
-
-gateway:
-  jwt:
-    secret: ${JWT_SECRET:ldms-dev-gateway-jwt-secret-change-me-in-production-min-32-chars}
-    roles-claim: roles
-
+    lease-expiration-duration-in-seconds: 90
 management:
-  server:
-    port: 9080
   endpoints:
     web:
       exposure:
         include: health,info,prometheus
-
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+  server:
+    port: 9080
   metrics:
     export:
       prometheus:
         enabled: true
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  api-docs:
+    path: /v3/api-docs
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 10000
+        logger-level: FULL
+  circuitbreaker:
+    enabled: true
+jwt:
+  secret: ${JWT_SECRET:dev-jwt-secret-change-me-please-override}
+  access-token-expiration-ms: 900000
+  refresh-token-expiration-ms: 604800000
+ldms:
+  audit:
+    enabled: true
+  audit-rabbitmq:
+    exchange: ldms.audit.exchange
+    routing-key: audit.log
+audit:
+  rabbitmq:
+    exchange: ${ldms.audit-rabbitmq.exchange}
+    routingkey: ${ldms.audit-rabbitmq.routing-key}
 logging:
+  pattern:
+    console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","service":"${spring.application.name}","traceId":"%X{traceId}","spanId":"%X{spanId}","thread":"%thread","logger":"%logger{36}","message":"%msg"}%n'
   level:
+    root: INFO
+    projectlx: DEBUG
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
     org.springframework.cloud.gateway: INFO
     projectlx.co.zw.apigateway: INFO
     io.netty.resolver.dns.DnsServerAddressStreamProviders: WARN
@@ -154,3 +218,9 @@ logging:
     com.netflix.discovery.shared.resolver.aws.ConfigClusterResolver: WARN
     com.netflix.discovery.shared.transport.decorator.RetryableEurekaHttpClient: WARN
     com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: WARN
+server:
+  port: 8091
+gateway:
+  jwt:
+    secret: ${JWT_SECRET:ldms-dev-gateway-jwt-secret-change-me-in-production-min-32-chars}
+    roles-claim: roles

@@ -1,34 +1,56 @@
-# Secrets must come from the environment (or a private secrets store) — do not commit plaintext keys.
-# GitHub push protection blocks AWS keys, Twilio SIDs, etc. in this file.
-#
-# Required for full functionality (set in .env, IDE run config, or deployment secrets):
-#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY — Spring Cloud AWS (SES)
-#   TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
-#   SENDGRID_API_KEY (if using SendGrid)
-#   JWT_SECRET — HS256 signing secret for shared-library JWT
-
-server:
-  port: 8094
-
 spring:
-  application:
-    name: notifications
-
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate.jdbc.batch_size: 25
+      hibernate.order_inserts: true
+      hibernate.format_sql: false
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:developer}
     password: ${RABBITMQ_PASSWORD:Password098()!}
-
+    virtual-host: /
+    connection-timeout: 5000
+    listener:
+      simple:
+        acknowledge-mode: auto
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000
+          multiplier: 2.0
+          max-interval: 10000
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 2
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+    out-of-order: false
+  servlet:
+    multipart:
+      max-file-size: 128MB
+      max-request-size: 128MB
+  application:
+    name: notifications
   datasource:
     url: jdbc:mysql://localhost:3306/ldms_notifications?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
     username: ${DB_USERNAME:${MYSQL_USER:developer}}
     password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    show-sql: true
-
   cloud:
     aws:
       credentials:
@@ -39,19 +61,83 @@ spring:
       ses:
         enabled: ${SPRING_CLOUD_AWS_SES_ENABLED:true}
         region: ${AWS_REGION:eu-north-1}
-
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://${EUREKA_USERNAME:eureka}:${EUREKA_PASSWORD_ENCODED:Eureka098%28%29%21}@localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 30
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
 management:
-  server:
-    port: 9094
   endpoints:
     web:
       exposure:
         include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+  server:
+    port: 9094
   metrics:
     export:
       prometheus:
         enabled: true
-
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  api-docs:
+    path: /v3/api-docs
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 10000
+        logger-level: FULL
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: full
+  circuitbreaker:
+    enabled: true
+jwt:
+  secret: ${JWT_SECRET:}
+  access-token-expiration-ms: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:900000}
+  refresh-token-expiration-ms: ${JWT_REFRESH_TOKEN_EXPIRATION_MS:604800000}
+ldms:
+  audit:
+    enabled: true
+  audit-rabbitmq:
+    exchange: ldms.audit.exchange
+    routing-key: audit.log
+audit:
+  rabbitmq:
+    exchange: exchange.audit.log
+    routingkey: ${ldms.audit-rabbitmq.routing-key}
+    routing-key: routing.audit.log
+logging:
+  pattern:
+    console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","service":"${spring.application.name}","traceId":"%X{traceId}","spanId":"%X{spanId}","thread":"%thread","logger":"%logger{36}","message":"%msg"}%n'
+  level:
+    root: INFO
+    projectlx: DEBUG
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+server:
+  port: 8094
 notifications:
   rabbitmq:
     exchange: notifications.direct
@@ -62,33 +148,9 @@ notifications:
       webhook-url: ${SLACK_WEBHOOK_URL:}
     teams:
       webhook-url: ${TEAMS_WEBHOOK_URL:}
-
-audit:
-  rabbitmq:
-    exchange: exchange.audit.log
-    routing-key: routing.audit.log
-
-jwt:
-  secret: ${JWT_SECRET:}
-  access-token-expiration-ms: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:900000}
-  refresh-token-expiration-ms: ${JWT_REFRESH_TOKEN_EXPIRATION_MS:604800000}
-
-springdoc:
-  swagger-ui:
-    path: "/swagger-ui.html"
-
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 5000
-        readTimeout: 5000
-        loggerLevel: full
-
 flyway:
   enabled: true
   locations: classpath:db/migration
-
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID:}
   auth-token: ${TWILIO_AUTH_TOKEN:}
@@ -96,12 +158,9 @@ twilio:
   whatsapp:
     from-number: ${TWILIO_WHATSAPP_FROM_NUMBER:+14155238886}
     sandbox-mode: ${TWILIO_WHATSAPP_SANDBOX_MODE:true}
-
 sendgrid:
   api-key: ${SENDGRID_API_KEY:}
   from-email: ${SENDGRID_FROM_EMAIL:noreply@yourcompany.com}
-
-# aws.ses.from-email is read by the app; root credentials are optional if you use spring.cloud.aws only
 aws:
   ses:
     region: ${AWS_REGION:eu-north-1}
@@ -109,10 +168,8 @@ aws:
   credentials:
     access-key: ${AWS_ACCESS_KEY_ID:}
     secret-key: ${AWS_SECRET_ACCESS_KEY:}
-
 firebase:
   service-account-file: ${FIREBASE_SERVICE_ACCOUNT_FILE:classpath:ldms-inapp-notifications-firebase-adminsdk-fbsvc-c44f468b67.json}
-
 app:
   security:
     token:

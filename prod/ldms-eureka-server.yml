@@ -1,45 +1,132 @@
-# Main registry port stays 8761 (Spring Cloud default). Actuator is on management.server.port (90xx).
-server:
-  port: 8761
-
 spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate.jdbc.batch_size: 25
+      hibernate.order_inserts: true
+      hibernate.format_sql: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:developer}
+    password: ${RABBITMQ_PASSWORD:Password098()!}
+    virtual-host: /
+    connection-timeout: 5000
+    listener:
+      simple:
+        acknowledge-mode: auto
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000
+          multiplier: 2.0
+          max-interval: 10000
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 2
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+    out-of-order: false
+  servlet:
+    multipart:
+      max-file-size: 128MB
+      max-request-size: 128MB
   application:
     name: ldms-eureka-server
   security:
     user:
       name: ${EUREKA_DASHBOARD_USER}
       password: ${EUREKA_DASHBOARD_PASSWORD}
-
 eureka:
+  client:
+    service-url:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@${eureka.instance.hostname}:${server.port}/eureka/
+    register-with-eureka: false
+    fetch-registry: false
+    registry-fetch-interval-seconds: 30
+    filter-only-up-instances: true
   instance:
-    hostname: ${EUREKA_HOSTNAME}
     prefer-ip-address: true
     lease-renewal-interval-in-seconds: 30
     lease-expiration-duration-in-seconds: 90
-  client:
-    register-with-eureka: false
-    fetch-registry: false
-    service-url:
-      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@${eureka.instance.hostname}:${server.port}/eureka/
-    filter-only-up-instances: true
-    registry-fetch-interval-seconds: 30
+    hostname: ${EUREKA_HOSTNAME}
   server:
     enable-self-preservation: true
     renewal-percent-threshold: 0.85
-
 management:
-  server:
-    port: 9076
   endpoints:
     web:
       exposure:
         include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+  server:
+    port: 9076
   metrics:
     export:
       prometheus:
         enabled: true
-
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  api-docs:
+    path: /v3/api-docs
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 10000
+        logger-level: FULL
+  circuitbreaker:
+    enabled: true
+jwt:
+  secret: ${JWT_SECRET:dev-jwt-secret-change-me-please-override}
+  access-token-expiration-ms: 900000
+  refresh-token-expiration-ms: 604800000
+ldms:
+  audit:
+    enabled: true
+  audit-rabbitmq:
+    exchange: ldms.audit.exchange
+    routing-key: audit.log
+audit:
+  rabbitmq:
+    exchange: ${ldms.audit-rabbitmq.exchange}
+    routingkey: ${ldms.audit-rabbitmq.routing-key}
 logging:
+  pattern:
+    console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","service":"${spring.application.name}","traceId":"%X{traceId}","spanId":"%X{spanId}","thread":"%thread","logger":"%logger{36}","message":"%msg"}%n'
   level:
+    root: INFO
+    projectlx: DEBUG
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
     com.netflix.eureka: WARN
     com.netflix.discovery: WARN
+server:
+  port: 8761

@@ -1,10 +1,49 @@
-# ldms-location-management — staging (Spring Cloud Config).
-# Docker Compose disabled; MySQL/RabbitMQ/Eureka are platform-managed. Same key layout as dev/prod.
-
-server:
-  port: ${SERVER_PORT:8084}
-
 spring:
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:none}
+    open-in-view: false
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate.jdbc.batch_size: 25
+      hibernate.order_inserts: true
+      hibernate.format_sql: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:staging-rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:${RABBITMQ_DEFAULT_USER:developer}}
+    password: ${RABBITMQ_PASSWORD:${RABBITMQ_DEFAULT_PASS:Password098()!}}
+    virtual-host: /
+    connection-timeout: 5000
+    listener:
+      simple:
+        acknowledge-mode: auto
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000
+          multiplier: 2.0
+          max-interval: 10000
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 2
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+    out-of-order: false
+  servlet:
+    multipart:
+      max-file-size: 128MB
+      max-request-size: 128MB
   application:
     name: ldms-location-management
   docker:
@@ -13,8 +52,8 @@ spring:
       lifecycle-management: start-only
       start:
         arguments:
-          - mysql
-          - rabbitmq
+        - mysql
+        - rabbitmq
   datasource:
     url: jdbc:mysql://${DB_HOST:staging-db}:${DB_PORT:3306}/ldms_location_management?useSSL=true&serverTimezone=UTC&createDatabaseIfNotExist=true&connectTimeout=15000&socketTimeout=45000
     username: ${DB_USERNAME:${MYSQL_USER:developer}}
@@ -25,50 +64,80 @@ spring:
       minimum-idle: ${DATASOURCE_POOL_MIN:5}
       idle-timeout: ${HIKARI_IDLE_TIMEOUT_MS:300000}
       connection-timeout: ${HIKARI_CONNECTION_TIMEOUT_MS:30000}
-  jpa:
-    hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:none}
-    show-sql: ${JPA_SHOW_SQL:false}
-  rabbitmq:
-    host: ${RABBITMQ_HOST:staging-rabbitmq}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:${RABBITMQ_DEFAULT_USER:developer}}
-    password: ${RABBITMQ_PASSWORD:${RABBITMQ_DEFAULT_PASS:Password098()!}}
-
-management:
-  server:
-    port: ${MANAGEMENT_SERVER_PORT:9084}
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus
-  metrics:
-    export:
-      prometheus:
-        enabled: true
-  tracing:
-    sampling:
-      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:0.1}
-
-logging:
-  level:
-    root: ${LOGGING_LEVEL_ROOT:INFO}
-    projectlx: ${LOGGING_LEVEL_PROJECTLX:INFO}
-
-jwt:
-  secret: ${JWT_SECRET:staging-secret-must-be-at-least-256-bits-for-hs256-xxxxxxxxxxxxxxxx}
-  access-token-expiration-ms: ${JWT_ACCESS_MS:3600000}
-  refresh-token-expiration-ms: ${JWT_REFRESH_MS:86400000}
-
 eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://staging-eureka:8761/eureka/}
     register-with-eureka: ${EUREKA_REGISTER_WITH_EUREKA:true}
     fetch-registry: ${EUREKA_FETCH_REGISTRY:true}
+    registry-fetch-interval-seconds: 30
     eureka-server-connect-timeout-seconds: ${EUREKA_SERVER_CONNECT_TIMEOUT_SECONDS:5}
     eureka-server-read-timeout-seconds: ${EUREKA_SERVER_READ_TIMEOUT_SECONDS:8}
   instance:
     prefer-ip-address: ${EUREKA_PREFER_IP_ADDRESS:true}
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
     hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
     instance-id: ${EUREKA_INSTANCE_ID:${spring.application.name}:${server.port}:${random.uuid}}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:0.1}
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+  server:
+    port: ${MANAGEMENT_SERVER_PORT:9084}
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  api-docs:
+    path: /v3/api-docs
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 10000
+        logger-level: FULL
+  circuitbreaker:
+    enabled: true
+jwt:
+  secret: ${JWT_SECRET:staging-secret-must-be-at-least-256-bits-for-hs256-xxxxxxxxxxxxxxxx}
+  access-token-expiration-ms: ${JWT_ACCESS_MS:3600000}
+  refresh-token-expiration-ms: ${JWT_REFRESH_MS:86400000}
+ldms:
+  audit:
+    enabled: true
+  audit-rabbitmq:
+    exchange: ldms.audit.exchange
+    routing-key: audit.log
+audit:
+  rabbitmq:
+    exchange: ${ldms.audit-rabbitmq.exchange}
+    routingkey: ${ldms.audit-rabbitmq.routing-key}
+logging:
+  pattern:
+    console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","service":"${spring.application.name}","traceId":"%X{traceId}","spanId":"%X{spanId}","thread":"%thread","logger":"%logger{36}","message":"%msg"}%n'
+  level:
+    root: ${LOGGING_LEVEL_ROOT:INFO}
+    projectlx: ${LOGGING_LEVEL_PROJECTLX:INFO}
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+server:
+  port: ${SERVER_PORT:8084}

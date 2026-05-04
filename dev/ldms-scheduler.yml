@@ -1,35 +1,129 @@
-server:
-  port: 8001
-
 spring:
-  application:
-    name: ldms-scheduler
-  # No datasource — scheduler is stateless
   jpa:
     hibernate:
       ddl-auto: none
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate.jdbc.batch_size: 25
+      hibernate.order_inserts: true
+      hibernate.format_sql: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:developer}
+    password: ${RABBITMQ_PASSWORD:Password098()!}
+    virtual-host: /
+    connection-timeout: 5000
+    listener:
+      simple:
+        acknowledge-mode: auto
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000
+          multiplier: 2.0
+          max-interval: 10000
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 2
   flyway:
     enabled: false
-
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+    out-of-order: false
+  servlet:
+    multipart:
+      max-file-size: 128MB
+      max-request-size: 128MB
+  application:
+    name: ldms-scheduler
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://${EUREKA_USERNAME:eureka}:${EUREKA_PASSWORD_ENCODED:Eureka098%28%29%21}@localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 30
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
 management:
-  server:
-    port: 9001
-
   endpoints:
     web:
       exposure:
         include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+  server:
+    port: 9001
   metrics:
     export:
       prometheus:
         enabled: true
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  api-docs:
+    path: /v3/api-docs
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 10000
+        logger-level: FULL
+  circuitbreaker:
+    enabled: true
+jwt:
+  secret: ${JWT_SECRET:dev-jwt-secret-change-me-please-override}
+  access-token-expiration-ms: 900000
+  refresh-token-expiration-ms: 604800000
 ldms:
+  audit:
+    enabled: true
+  audit-rabbitmq:
+    exchange: ldms.audit.exchange
+    routing-key: audit.log
   scheduler:
-    overdue-invoices-cron: "0 0 1 * * *"
-    compliance-check-cron: "0 0 6 * * *"
-    kyc-sla-cron: "0 */30 * * * *"
-    monthly-report-cron: "0 0 2 1 * *"
-
+    overdue-invoices-cron: 0 0 1 * * *
+    compliance-check-cron: 0 0 6 * * *
+    kyc-sla-cron: 0 */30 * * * *
+    monthly-report-cron: 0 0 2 1 * *
+audit:
+  rabbitmq:
+    exchange: ${ldms.audit-rabbitmq.exchange}
+    routingkey: ${ldms.audit-rabbitmq.routing-key}
+logging:
+  pattern:
+    console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","service":"${spring.application.name}","traceId":"%X{traceId}","spanId":"%X{spanId}","thread":"%thread","logger":"%logger{36}","message":"%msg"}%n'
+  level:
+    root: INFO
+    projectlx: DEBUG
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+server:
+  port: 8001
 clients:
   base-url:
     billing-payments: http://ldms-billing-payments
