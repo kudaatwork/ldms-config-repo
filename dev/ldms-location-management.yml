@@ -1,8 +1,6 @@
 # ldms-location-management — dev (Spring Cloud Config).
-# Keep in sync with:
-#   ldms-platform/ldms-backend/ldms-locations/src/main/resources/config/ldms-locations-after-config-server.yml
-# and the shared stack:
-#   ldms-platform/infrastructure/docker-compose.yml (mysql + rabbitmq; spring.docker.compose.start.arguments).
+# Shared Docker stack: ldms-platform/infrastructure/docker-compose.yml
+# (spring.docker.compose.start.arguments: mysql, rabbitmq).
 
 server:
   port: ${SERVER_PORT:8084}
@@ -13,8 +11,7 @@ spring:
   docker:
     compose:
       enabled: ${SPRING_DOCKER_COMPOSE_ENABLED:true}
-      file:
-        - ../../infrastructure/docker-compose.yml
+      # spring.docker.compose.file is set at startup to an absolute path (see LdmsInfrastructureComposeLocator).
       lifecycle-management: start-only
       start:
         arguments:
