@@ -1,16 +1,32 @@
+# ldms-location-management — staging (Spring Cloud Config).
+# Docker Compose is disabled; infra is provisioned by the platform (no local compose file path).
+
 server:
   port: 8084
 
 spring:
   application:
     name: ldms-location-management
+  docker:
+    compose:
+      enabled: false
   datasource:
-    url: jdbc:mysql://${DB_HOST:staging-db}:3306/ldms_location_management?useSSL=true&serverTimezone=UTC&createDatabaseIfNotExist=true
+    url: jdbc:mysql://${DB_HOST:staging-db}:3306/ldms_location_management?useSSL=true&serverTimezone=UTC&createDatabaseIfNotExist=true&connectTimeout=15000&socketTimeout=45000
     username: ${DB_USERNAME:${MYSQL_USER:developer}}
     password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${DATASOURCE_POOL_MAX:20}
+      minimum-idle: ${DATASOURCE_POOL_MIN:5}
+      idle-timeout: ${HIKARI_IDLE_TIMEOUT_MS:300000}
+      connection-timeout: ${HIKARI_CONNECTION_TIMEOUT_MS:30000}
   jpa:
     show-sql: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:staging-rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:developer}
+    password: ${RABBITMQ_PASSWORD:Password098()!}
 
 management:
   server:
@@ -22,6 +38,11 @@ management:
 logging:
   level:
     projectlx: INFO
+
+jwt:
+  secret: ${JWT_SECRET:staging-secret-must-be-at-least-256-bits-for-hs256-xxxxxxxxxxxxxxxx}
+  access-token-expiration-ms: ${JWT_ACCESS_MS:3600000}
+  refresh-token-expiration-ms: ${JWT_REFRESH_MS:86400000}
 
 eureka:
   client:
