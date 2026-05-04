@@ -1,8 +1,8 @@
 # ldms-location-management — staging (Spring Cloud Config).
-# Docker Compose is disabled; infra is provisioned by the platform (no local compose file path).
+# Docker Compose disabled; MySQL/RabbitMQ/Eureka are platform-managed. Same key layout as dev/prod.
 
 server:
-  port: 8084
+  port: ${SERVER_PORT:8084}
 
 spring:
   application:
@@ -10,8 +10,13 @@ spring:
   docker:
     compose:
       enabled: false
+      lifecycle-management: start-only
+      start:
+        arguments:
+          - mysql
+          - rabbitmq
   datasource:
-    url: jdbc:mysql://${DB_HOST:staging-db}:3306/ldms_location_management?useSSL=true&serverTimezone=UTC&createDatabaseIfNotExist=true&connectTimeout=15000&socketTimeout=45000
+    url: jdbc:mysql://${DB_HOST:staging-db}:${DB_PORT:3306}/ldms_location_management?useSSL=true&serverTimezone=UTC&createDatabaseIfNotExist=true&connectTimeout=15000&socketTimeout=45000
     username: ${DB_USERNAME:${MYSQL_USER:developer}}
     password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -21,23 +26,34 @@ spring:
       idle-timeout: ${HIKARI_IDLE_TIMEOUT_MS:300000}
       connection-timeout: ${HIKARI_CONNECTION_TIMEOUT_MS:30000}
   jpa:
-    show-sql: false
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:none}
+    show-sql: ${JPA_SHOW_SQL:false}
   rabbitmq:
     host: ${RABBITMQ_HOST:staging-rabbitmq}
     port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:developer}
-    password: ${RABBITMQ_PASSWORD:Password098()!}
+    username: ${RABBITMQ_USERNAME:${RABBITMQ_DEFAULT_USER:developer}}
+    password: ${RABBITMQ_PASSWORD:${RABBITMQ_DEFAULT_PASS:Password098()!}}
 
 management:
   server:
-    port: 9084
+    port: ${MANAGEMENT_SERVER_PORT:9084}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
   tracing:
     sampling:
-      probability: 0.1
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:0.1}
 
 logging:
   level:
-    projectlx: INFO
+    root: ${LOGGING_LEVEL_ROOT:INFO}
+    projectlx: ${LOGGING_LEVEL_PROJECTLX:INFO}
 
 jwt:
   secret: ${JWT_SECRET:staging-secret-must-be-at-least-256-bits-for-hs256-xxxxxxxxxxxxxxxx}
@@ -48,3 +64,11 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://staging-eureka:8761/eureka/}
+    register-with-eureka: ${EUREKA_REGISTER_WITH_EUREKA:true}
+    fetch-registry: ${EUREKA_FETCH_REGISTRY:true}
+    eureka-server-connect-timeout-seconds: ${EUREKA_SERVER_CONNECT_TIMEOUT_SECONDS:5}
+    eureka-server-read-timeout-seconds: ${EUREKA_SERVER_READ_TIMEOUT_SECONDS:8}
+  instance:
+    prefer-ip-address: ${EUREKA_PREFER_IP_ADDRESS:true}
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
+    instance-id: ${EUREKA_INSTANCE_ID:${spring.application.name}:${server.port}:${random.uuid}}
