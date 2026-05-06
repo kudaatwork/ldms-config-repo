@@ -42,6 +42,8 @@ spring:
     baseline-on-migrate: false
     validate-on-migrate: true
     out-of-order: false
+    # Dev: schema may be ahead when migrations live only in this repo or another checkout.
+    ignore-missing-migrations: true
   servlet:
     multipart:
       max-file-size: 128MB
@@ -70,13 +72,15 @@ eureka:
       defaultZone: http://eureka:Eureka098()!@localhost:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
-    registry-fetch-interval-seconds: 30
+    registry-fetch-interval-seconds: 5
     eureka-server-connect-timeout-seconds: 5
     eureka-server-read-timeout-seconds: 8
   instance:
-    prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 30
-    lease-expiration-duration-in-seconds: 90
+    # Dev: advertise loopback so the API gateway (lb://user-management) avoids stale LAN IPs (e.g. 10.x).
+    hostname: localhost
+    prefer-ip-address: false
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
 management:
   endpoints:
     web:
