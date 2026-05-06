@@ -85,6 +85,10 @@ spring:
         uri: lb://user-management
         predicates:
         - Path=/ldms-user-management/v1/system/**
+      - id: backoffice-user
+        uri: lb://user-management
+        predicates:
+        - Path=/ldms-user-management/v1/backoffice/**
       - id: auth
         uri: lb://auth-management
         predicates:
@@ -143,7 +147,8 @@ eureka:
       defaultZone: http://eureka:Eureka098%28%29%21@localhost:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
-    registry-fetch-interval-seconds: 30
+    # Dev: pick up service re-registrations quickly (e.g. user-management localhost in Eureka).
+    registry-fetch-interval-seconds: 5
     eureka-server-connect-timeout-seconds: 5
     eureka-server-read-timeout-seconds: 8
     instance-info-replication-interval-seconds: 30
