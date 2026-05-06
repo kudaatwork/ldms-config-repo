@@ -48,6 +48,10 @@ spring:
   application:
     name: ldms-api-gateway
   cloud:
+    # Dev: do not pin dead Eureka IPs in the LB cache across restarts/VPN churn.
+    loadbalancer:
+      cache:
+        enabled: false
     gateway:
       globalcors:
         add-to-simple-url-handler-mapping: true
@@ -77,16 +81,19 @@ spring:
           redis-rate-limiter.burstCapacity: 100
           key-resolver: '#{@ipKeyResolver}'
       routes:
+      # User-management (dev): call service directly instead of lb:// — Eureka often exposes a LAN IP
+      # while the JVM listens only on localhost, which yields connection refused / empty LB servers.
+      # Docker: set USER_MANAGEMENT_HOST e.g. to the compose service hostname.
       - id: frontend-user
-        uri: lb://user-management
+        uri: http://${USER_MANAGEMENT_HOST:127.0.0.1}:${USER_MANAGEMENT_PORT:8086}
         predicates:
         - Path=/ldms-user-management/v1/frontend/**
       - id: system-user
-        uri: lb://user-management
+        uri: http://${USER_MANAGEMENT_HOST:127.0.0.1}:${USER_MANAGEMENT_PORT:8086}
         predicates:
         - Path=/ldms-user-management/v1/system/**
       - id: backoffice-user
-        uri: lb://user-management
+        uri: http://${USER_MANAGEMENT_HOST:127.0.0.1}:${USER_MANAGEMENT_PORT:8086}
         predicates:
         - Path=/ldms-user-management/v1/backoffice/**
       - id: auth
