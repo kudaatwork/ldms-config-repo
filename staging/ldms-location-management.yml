@@ -1,15 +1,15 @@
 spring:
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:none}
+      ddl-auto: ${JPA_DDL_AUTO:update}
     open-in-view: false
-    show-sql: ${JPA_SHOW_SQL:false}
+    show-sql: ${JPA_SHOW_SQL:true}
     properties:
       hibernate.jdbc.batch_size: 25
       hibernate.order_inserts: true
       hibernate.format_sql: false
   rabbitmq:
-    host: ${RABBITMQ_HOST:staging-rabbitmq}
+    host: ${RABBITMQ_HOST:127.0.0.1}
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:${RABBITMQ_DEFAULT_USER:developer}}
     password: ${RABBITMQ_PASSWORD:${RABBITMQ_DEFAULT_PASS:Password098()!}}
@@ -48,37 +48,37 @@ spring:
     name: ldms-location-management
   docker:
     compose:
-      enabled: false
+      enabled: ${SPRING_DOCKER_COMPOSE_ENABLED:true}
       lifecycle-management: start-only
       start:
         arguments:
         - mysql
         - rabbitmq
   datasource:
-    url: jdbc:mysql://${DB_HOST:staging-db}:${DB_PORT:3306}/ldms_location_management?useSSL=true&serverTimezone=UTC&createDatabaseIfNotExist=true&connectTimeout=15000&socketTimeout=45000
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/ldms_location_management?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true&connectTimeout=10000&socketTimeout=45000
     username: ${DB_USERNAME:${MYSQL_USER:developer}}
     password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: ${DATASOURCE_POOL_MAX:20}
       minimum-idle: ${DATASOURCE_POOL_MIN:5}
-      idle-timeout: ${HIKARI_IDLE_TIMEOUT_MS:300000}
-      connection-timeout: ${HIKARI_CONNECTION_TIMEOUT_MS:30000}
+      idle-timeout: ${HIKARI_IDLE_TIMEOUT_MS:30000}
+      connection-timeout: ${HIKARI_CONNECTION_TIMEOUT_MS:20000}
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_URL:http://staging-eureka:8761/eureka/}
+      defaultZone: ${EUREKA_URL:http://eureka:Eureka098%28%29%21@localhost:8761/eureka/}
     register-with-eureka: ${EUREKA_REGISTER_WITH_EUREKA:true}
     fetch-registry: ${EUREKA_FETCH_REGISTRY:true}
     registry-fetch-interval-seconds: 30
     eureka-server-connect-timeout-seconds: ${EUREKA_SERVER_CONNECT_TIMEOUT_SECONDS:5}
     eureka-server-read-timeout-seconds: ${EUREKA_SERVER_READ_TIMEOUT_SECONDS:8}
   instance:
-    prefer-ip-address: ${EUREKA_PREFER_IP_ADDRESS:true}
+    prefer-ip-address: ${EUREKA_PREFER_IP_ADDRESS:false}
     lease-renewal-interval-in-seconds: 30
     lease-expiration-duration-in-seconds: 90
     hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
-    instance-id: ${EUREKA_INSTANCE_ID:${spring.application.name}:${server.port}:${random.uuid}}
+    instance-id: ${EUREKA_INSTANCE_ID:${eureka.instance.hostname}:${spring.application.name}:${server.port}}
 management:
   endpoints:
     web:
@@ -92,7 +92,7 @@ management:
         enabled: true
   tracing:
     sampling:
-      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:0.1}
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}
   zipkin:
     tracing:
       endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
@@ -118,7 +118,7 @@ feign:
   circuitbreaker:
     enabled: true
 jwt:
-  secret: ${JWT_SECRET:staging-secret-must-be-at-least-256-bits-for-hs256-xxxxxxxxxxxxxxxx}
+  secret: ${JWT_SECRET:dev-secret-must-be-at-least-256-bits-for-hs256-xxxxxxxxxxxxxxxx}
   access-token-expiration-ms: ${JWT_ACCESS_MS:3600000}
   refresh-token-expiration-ms: ${JWT_REFRESH_MS:86400000}
 ldms:

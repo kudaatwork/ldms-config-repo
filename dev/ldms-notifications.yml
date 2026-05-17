@@ -1,4 +1,10 @@
+# ldms-notifications — Spring Cloud Config (dev)
+# Secrets: set via env / vault (TWILIO_*, SENDGRID_*, AWS_*, JWT_SECRET, TOKEN_SECRET_KEY, DB_*, RABBITMQ_*).
+# RabbitMQ must match the shared broker (same as other LDMS services): RABBITMQ_HOST, RABBITMQ_PORT,
+# RABBITMQ_USERNAME, RABBITMQ_PASSWORD.
 spring:
+  application:
+    name: ldms-notifications
   jpa:
     hibernate:
       ddl-auto: validate
@@ -13,7 +19,7 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:developer}
     password: ${RABBITMQ_PASSWORD:Password098()!}
-    virtual-host: /
+    virtual-host: ${RABBITMQ_VHOST:/}
     connection-timeout: 5000
     listener:
       simple:
@@ -44,10 +50,8 @@ spring:
     multipart:
       max-file-size: 128MB
       max-request-size: 128MB
-  application:
-    name: notifications
   datasource:
-    url: jdbc:mysql://localhost:3306/ldms_notifications?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:ldms_notifications}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
     username: ${DB_USERNAME:${MYSQL_USER:developer}}
     password: ${DB_PASSWORD:${MYSQL_DEVELOPER_PASSWORD:Password098()!}}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -61,6 +65,7 @@ spring:
       ses:
         enabled: ${SPRING_CLOUD_AWS_SES_ENABLED:true}
         region: ${AWS_REGION:eu-north-1}
+
 eureka:
   client:
     service-url:
@@ -72,6 +77,7 @@ eureka:
     prefer-ip-address: true
     lease-renewal-interval-in-seconds: 30
     lease-expiration-duration-in-seconds: 90
+
 management:
   endpoints:
     web:
@@ -95,12 +101,14 @@ management:
     export:
       prometheus:
         enabled: true
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
     enabled: true
   api-docs:
     path: /v3/api-docs
+
 feign:
   client:
     config:
@@ -113,21 +121,26 @@ feign:
         loggerLevel: full
   circuitbreaker:
     enabled: true
+
 jwt:
   secret: ${JWT_SECRET:}
   access-token-expiration-ms: ${JWT_ACCESS_TOKEN_EXPIRATION_MS:900000}
   refresh-token-expiration-ms: ${JWT_REFRESH_TOKEN_EXPIRATION_MS:604800000}
+
+# Canonical audit topic (must match ldms-audit-trail RabbitMQConfig).
 ldms:
   audit:
     enabled: true
   audit-rabbitmq:
-    exchange: ldms.audit.exchange
-    routing-key: audit.log
+    exchange: ${LDMS_AUDIT_RABBITMQ_EXCHANGE:ldms.audit.exchange}
+    routing-key: ${LDMS_AUDIT_RABBITMQ_ROUTING_KEY:audit.log}
+
+# Legacy keys kept for other tooling that still reads audit.rabbitmq.* — must NOT use exchange.audit.log.
 audit:
   rabbitmq:
-    exchange: exchange.audit.log
+    exchange: ${ldms.audit-rabbitmq.exchange}
     routingkey: ${ldms.audit-rabbitmq.routing-key}
-    routing-key: routing.audit.log
+
 logging:
   pattern:
     console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","service":"${spring.application.name}","traceId":"%X{traceId}","spanId":"%X{spanId}","thread":"%thread","logger":"%logger{36}","message":"%msg"}%n'
@@ -136,31 +149,37 @@ logging:
     projectlx: DEBUG
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
+
 server:
   port: 8094
+
 notifications:
   rabbitmq:
-    exchange: notifications.direct
-    queue: notifications.queue
-    routing-key: notifications.send
+    exchange: ${NOTIFICATIONS_RABBITMQ_EXCHANGE:notifications.direct}
+    queue: ${NOTIFICATIONS_RABBITMQ_QUEUE:notifications.queue}
+    routing-key: ${NOTIFICATIONS_RABBITMQ_ROUTING_KEY:notifications.send}
   providers:
     slack:
       webhook-url: ${SLACK_WEBHOOK_URL:}
     teams:
       webhook-url: ${TEAMS_WEBHOOK_URL:}
+
 flyway:
   enabled: true
   locations: classpath:db/migration
+
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID:}
   auth-token: ${TWILIO_AUTH_TOKEN:}
   phone-number: ${TWILIO_PHONE_NUMBER:+13186186886}
   whatsapp:
-    from-number: ${TWILIO_WHATSAPP_FROM_NUMBER:+14155238886}
+    from-number: ${TWILIO_WHATSAPP_FROM:${TWILIO_WHATSAPP_FROM_NUMBER:+14155238886}}
     sandbox-mode: ${TWILIO_WHATSAPP_SANDBOX_MODE:true}
+
 sendgrid:
   api-key: ${SENDGRID_API_KEY:}
-  from-email: ${SENDGRID_FROM_EMAIL:noreply@yourcompany.com}
+  from-email: ${SENDGRID_FROM_EMAIL:${AWS_SES_FROM_EMAIL:info@xigencreative.co.zw}}
+
 aws:
   ses:
     region: ${AWS_REGION:eu-north-1}
@@ -168,11 +187,13 @@ aws:
   credentials:
     access-key: ${AWS_ACCESS_KEY_ID:}
     secret-key: ${AWS_SECRET_ACCESS_KEY:}
+
 firebase:
   service-account-file: ${FIREBASE_SERVICE_ACCOUNT_FILE:classpath:ldms-inapp-notifications-firebase-adminsdk-fbsvc-c44f468b67.json}
+
 app:
   security:
     token:
-      secret-key: ${TOKEN_SECRET_KEY:your-super-secret-signing-key-change-in-production-min-32-chars}
+      secret-key: ${TOKEN_SECRET_KEY:}
       length: ${TOKEN_LENGTH:32}
       expiration-hours: ${TOKEN_EXPIRATION_HOURS:24}

@@ -45,7 +45,7 @@ spring:
       max-file-size: 128MB
       max-request-size: 128MB
   application:
-    name: notifications
+    name: ldms-notifications
   datasource:
     url: jdbc:mysql://localhost:3306/ldms_notifications?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
     username: ${DB_USERNAME:${MYSQL_USER:developer}}
@@ -156,11 +156,13 @@ twilio:
   auth-token: ${TWILIO_AUTH_TOKEN:}
   phone-number: ${TWILIO_PHONE_NUMBER:+13186186886}
   whatsapp:
-    from-number: ${TWILIO_WHATSAPP_FROM_NUMBER:+14155238886}
+    from-number: ${TWILIO_WHATSAPP_FROM:${TWILIO_WHATSAPP_FROM_NUMBER:+14155238886}}
     sandbox-mode: ${TWILIO_WHATSAPP_SANDBOX_MODE:true}
+
 sendgrid:
   api-key: ${SENDGRID_API_KEY:}
-  from-email: ${SENDGRID_FROM_EMAIL:noreply@yourcompany.com}
+  from-email: ${SENDGRID_FROM_EMAIL:${AWS_SES_FROM_EMAIL:info@xigencreative.co.zw}}
+
 aws:
   ses:
     region: ${AWS_REGION:eu-north-1}
@@ -168,6 +170,7 @@ aws:
   credentials:
     access-key: ${AWS_ACCESS_KEY_ID:}
     secret-key: ${AWS_SECRET_ACCESS_KEY:}
+
 firebase:
   service-account-file: ${FIREBASE_SERVICE_ACCOUNT_FILE:classpath:ldms-inapp-notifications-firebase-adminsdk-fbsvc-c44f468b67.json}
 app:
