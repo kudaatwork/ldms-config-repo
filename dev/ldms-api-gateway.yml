@@ -101,13 +101,17 @@ spring:
         predicates:
         - Path=/ldms-authentication/v1/auth/**
       - id: frontend-organization
-        uri: lb://organization-management-service
+        uri: http://${ORGANIZATION_MANAGEMENT_HOST:127.0.0.1}:${ORGANIZATION_MANAGEMENT_PORT:8087}
         predicates:
         - Path=/ldms-organization-management/v1/frontend/**
       - id: system-organization
-        uri: lb://organization-management-service
+        uri: http://${ORGANIZATION_MANAGEMENT_HOST:127.0.0.1}:${ORGANIZATION_MANAGEMENT_PORT:8087}
         predicates:
         - Path=/ldms-organization-management/v1/system/**
+      - id: backoffice-organization
+        uri: http://${ORGANIZATION_MANAGEMENT_HOST:127.0.0.1}:${ORGANIZATION_MANAGEMENT_PORT:8087}
+        predicates:
+        - Path=/ldms-organization-management/v1/backoffice/**
       - id: frontend-notifications
         uri: lb://notifications
         predicates:
