@@ -83,7 +83,7 @@ management:
     tracing:
       endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
   server:
-    port: 9093
+    port: 9014
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -122,4 +122,4 @@ logging:
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
 server:
-  port: 8093
+  port: 8014
