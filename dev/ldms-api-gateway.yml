@@ -112,6 +112,42 @@ spring:
         uri: http://${ORGANIZATION_MANAGEMENT_HOST:127.0.0.1}:${ORGANIZATION_MANAGEMENT_PORT:8087}
         predicates:
         - Path=/ldms-organization-management/v1/backoffice/**
+      - id: frontend-fleet-management
+        uri: http://${FLEET_MANAGEMENT_HOST:127.0.0.1}:${FLEET_MANAGEMENT_PORT:8088}
+        predicates:
+        - Path=/ldms-fleet-management/v1/frontend/**
+      - id: system-fleet-management
+        uri: http://${FLEET_MANAGEMENT_HOST:127.0.0.1}:${FLEET_MANAGEMENT_PORT:8088}
+        predicates:
+        - Path=/ldms-fleet-management/v1/system/**
+      - id: backoffice-fleet-management
+        uri: http://${FLEET_MANAGEMENT_HOST:127.0.0.1}:${FLEET_MANAGEMENT_PORT:8088}
+        predicates:
+        - Path=/ldms-fleet-management/v1/backoffice/**
+      - id: frontend-inventory-management
+        uri: http://${INVENTORY_MANAGEMENT_HOST:127.0.0.1}:${INVENTORY_MANAGEMENT_PORT:8013}
+        predicates:
+        - Path=/ldms-inventory-management/v1/frontend/**
+      - id: system-inventory-management
+        uri: http://${INVENTORY_MANAGEMENT_HOST:127.0.0.1}:${INVENTORY_MANAGEMENT_PORT:8013}
+        predicates:
+        - Path=/ldms-inventory-management/v1/system/**
+      - id: backoffice-inventory-management
+        uri: http://${INVENTORY_MANAGEMENT_HOST:127.0.0.1}:${INVENTORY_MANAGEMENT_PORT:8013}
+        predicates:
+        - Path=/ldms-inventory-management/v1/backoffice/**
+      - id: frontend-billing-payments
+        uri: http://${BILLING_PAYMENTS_HOST:127.0.0.1}:${BILLING_PAYMENTS_PORT:8014}
+        predicates:
+        - Path=/ldms-billing-payments/v1/frontend/**
+      - id: system-billing-payments
+        uri: http://${BILLING_PAYMENTS_HOST:127.0.0.1}:${BILLING_PAYMENTS_PORT:8014}
+        predicates:
+        - Path=/ldms-billing-payments/v1/system/**
+      - id: backoffice-billing-payments
+        uri: http://${BILLING_PAYMENTS_HOST:127.0.0.1}:${BILLING_PAYMENTS_PORT:8014}
+        predicates:
+        - Path=/ldms-billing-payments/v1/backoffice/**
       - id: frontend-notifications
         uri: lb://notifications
         predicates:
