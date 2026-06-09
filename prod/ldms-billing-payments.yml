@@ -125,3 +125,7 @@ logging:
     org.hibernate.SQL: WARN
 server:
   port: 8014
+clients:
+  base-url:
+    userManagementService: http://ldms-user-management
+    inventoryManagementService: http://ldms-inventory-management

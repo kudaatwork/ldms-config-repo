@@ -108,6 +108,10 @@ jwt:
   access-token-expiration-ms: 900000
   refresh-token-expiration-ms: 604800000
 ldms:
+  dev:
+    force-local-feign-clients: true
+  api-gateway:
+    base-url: http://${API_GATEWAY_HOST:127.0.0.1}:${GATEWAY_SERVER_PORT:8091}
   audit:
     enabled: true
   audit-rabbitmq:
@@ -127,3 +131,8 @@ logging:
     org.hibernate.SQL: WARN
 server:
   port: 8014
+clients:
+  base-url:
+    apiGateway: http://${API_GATEWAY_HOST:127.0.0.1}:${GATEWAY_SERVER_PORT:8091}
+    userManagementService: http://${API_GATEWAY_HOST:127.0.0.1}:${GATEWAY_SERVER_PORT:8091}
+    inventoryManagementService: http://${API_GATEWAY_HOST:127.0.0.1}:${GATEWAY_SERVER_PORT:8091}
