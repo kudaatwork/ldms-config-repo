@@ -85,7 +85,7 @@ management:
     tracing:
       endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
   server:
-    port: 9090
+    port: 9016
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -130,7 +130,7 @@ logging:
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
 server:
-  port: 8090
+  port: 8016
 mqtt:
   broker-url: tcp://${MQTT_HOST}:1883
   client-id: ldms-trip-tracking-${random.int}

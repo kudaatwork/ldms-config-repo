@@ -148,6 +148,22 @@ spring:
         uri: http://${BILLING_PAYMENTS_HOST:127.0.0.1}:${BILLING_PAYMENTS_PORT:8014}
         predicates:
         - Path=/ldms-billing-payments/v1/backoffice/**
+      - id: frontend-shipment-management
+        uri: http://${SHIPMENT_MANAGEMENT_HOST:127.0.0.1}:${SHIPMENT_MANAGEMENT_PORT:8015}
+        predicates:
+        - Path=/ldms-shipment-management/v1/frontend/**
+      - id: system-shipment-management
+        uri: http://${SHIPMENT_MANAGEMENT_HOST:127.0.0.1}:${SHIPMENT_MANAGEMENT_PORT:8015}
+        predicates:
+        - Path=/ldms-shipment-management/v1/system/**
+      - id: frontend-trip-tracking
+        uri: http://${TRIP_TRACKING_HOST:127.0.0.1}:${TRIP_TRACKING_PORT:8016}
+        predicates:
+        - Path=/ldms-trip-tracking/v1/frontend/**
+      - id: system-trip-tracking
+        uri: http://${TRIP_TRACKING_HOST:127.0.0.1}:${TRIP_TRACKING_PORT:8016}
+        predicates:
+        - Path=/ldms-trip-tracking/v1/system/**
       - id: frontend-notifications
         uri: lb://notifications
         predicates:
